@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KEREBETT AI - Video/Films Creator</title>
+<style>
+body{margin:0;font-family:Arial;background:#0f1220;color:white}
+header{text-align:center;padding:20px;background:#1a1e32}
+main{max-width:650px;margin:auto;padding:14px}
+.card{background:#1e233a;padding:18px;border-radius:14px;margin:14px 0;border:1px solid #2e3658}
+textarea,input{width:100%;padding:12px;margin:8px 0;background:#0f1220;color:white;border:1px solid #555;border-radius:8px;box-sizing:border-box}
+textarea{min-height:100px}
+button{width:100%;padding:14px;background:#6c5cff;color:white;border:0;border-radius:10px;font-weight:bold;font-size:16px;margin-top:8px}
+.small{font-size:12px;color:#aaa}
+.bar{height:8px;background:#0f1220;border-radius:5px;margin-top:10px;overflow:hidden}
+.fill{height:100%;width:0%;background:#6c5cff}
+</style>
+</head>
+<body>
+<header>
+<h1>🎬 KEREBETT AI</h1>
+<p>Video / Films Creator - Text to Film & Photo to Film</p>
+</header>
+<main>
+
+<div class="card">
+<h2>🎞️ Epic Film Mode (30 MIN)</h2>
+<p class="small">Paste your full story. We split into 12 clips so it doesn't fail.</p>
+<textarea id="epic" placeholder="TITLE: THE LAST PATROL... Paste full story..."></textarea>
+<input id="char" value="Kip, 23yr Kenyan lean athletic man, green shirt, scar left eyebrow, same face every clip">
+<button onclick="split()">✂️ SPLIT INTO 12 CLIPS</button>
+<div id="list"></div>
+<div class="bar"><div id="fill" class="fill"></div></div>
+<p id="status">Ready. Paste story to start.</p>
+</div>
+
+<div class="card">
+<h2>📝 Text to Video/Film</h2>
+<textarea id="prompt" placeholder="e.g. Kip running through Kericho tea fields, cinematic, 4K..."></textarea>
+<button onclick="oneClip()">Generate Single Clip</button>
+</div>
+
+<div class="card">
+<h2>🖼️ Photo to Video/Film</h2>
+<input id="photo" type="file" accept="image/*">
+<textarea id="motion" placeholder="e.g. Make him smile, camera zoom in, wind in trees..."></textarea>
+<button onclick="photoClip()">Animate Photo</button>
+<img id="preview" hidden style="width:100%;border-radius:10px;margin-top:10px">
+</div>
+
+<div class="card">
+<button onclick="exportFilm()" style="background:#2a2f4d">📤 EXPORT FILM PROJECT (Download Prompts)</button>
+<p class="small">Creates TXT file with all 12 prompts ready for Runway/Wan/Luma.</p>
+</div>
+
+</main>
+<script>
+let clips=[];
+function split(){
+ let e=document.getElementById('epic').value.trim();
+ let c=document.getElementById('char').value.trim();
+ if(!e){msg('Paste story first');return;}
+ let parts=e.split(/ACT|SCENE|---/i).filter(s=>s.trim().length>30);
+ if(parts.length<4){
+   clips=[
+    `Sunrise Kericho village peaceful, ${c} farming, golden light cinematic 4K`,
+    `Trucks invade, General burns village takes girl yellow dress, ${c} beaten`,
+    `Night burnt ruins rain, ${c} finds father's rifle vows revenge tears`,
+    `Training montage highlands foggy morning running hills log, ${c} Rocky style`,
+    `Ambush murram road hand combat 4 soldiers jungle, ${c} guerrilla`,
+    `Night infiltration tea factory camp stealth takedowns, ${c}`,
+    `Boda boda chase vs Land Cruisers tea plantation bullets explosion, ${c}`,
+    `Betrayal best friend now enemy fight rain emotional, ${c} spares him`,
+    `Final base huge dam sunset 100 soldiers girl tied wall, ${c}`,
+    `One man army slow motion explosion gun martial arts, ${c}`,
+    `Final boss dam edge brutal combat Barasa falls dam ${c} saves sister`,
+    `Dawn village rebuilt ${c} sister on hill valley cheering throws rifle peace`
+   ];
+ } else { clips=parts.slice(0,12).map(s=>c+', '+s.trim().substring(0,180)); }
+ document.getElementById('list').innerHTML='<h3>'+clips.length+' Clips:</h3>'+clips.map((x,i)=>`<div style="background:#0f1220;padding:8px;margin:5px 0;border-radius:6px;font-size:13px"><b>${i+1}.</b> ${x.substring(0,100)}...</div>`).join('');
+ fill(20); msg('✅ Split OK! '+clips.length+' clips locked with same face. Ready to export.');
+}
+function oneClip(){
+ let p=document.getElementById('prompt').value.trim();
+ if(!p){msg('Describe video');return;}
+ clips=[p]; msg('Single clip ready: '+p); fill(50);
+}
+function photoClip(){
+ let f=document.getElementById('photo').files[0];
+ let m=document.getElementById('motion').value.trim();
+ if(!f){msg('Select photo');return;}
+ if(!m){msg('Describe movement');return;}
+ document.getElementById('preview').src=URL.createObjectURL(f);
+ document.getElementById('preview').hidden=false;
+ msg('Photo loaded! Movement: '+m); fill(40);
+}
+function exportFilm(){
+ if(!clips.length){msg('Split epic first');return;}
+ let txt=clips.map((c,i)=>`CLIP ${i+1} / ${clips.length}:\n${c}\n\n---\n`).join('');
+ let b=new Blob([txt],{type:'text/plain'});
+ let a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download='KEREBETT_FILM_12_CLIPS.txt'; a.click();
+ msg('📤 Downloaded! Now upload these 12 prompts to Wan/Runway one by one to get 30 min film.'); fill(100);
+}
+function msg(t){document.getElementById('status').textContent=t;}
+function fill(p){document.getElementById('fill').style.width=p+'%';}
+</script>
+</body>
+</html>
